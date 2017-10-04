@@ -12,6 +12,8 @@ in rec {
                     pkgs.SDL2
                     pkgs.SDL2_ttf
                     pkgs.kcov
-                    dimooperChannel.rust ];
+                    dimooperChannel.rust
+                    dimooperChannel.rust-src ];
+    RUST_SRC_PATH = "${dimooperChannel.rust-src}/lib/rustlib/src/rust/src";
   };
 }
