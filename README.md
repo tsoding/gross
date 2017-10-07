@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/tsoding/gross.svg?branch=master)](https://travis-ci.org/tsoding/gross)
+
 # Gross
 
 ![tsoder](https://raw.githubusercontent.com/tsoding/gross-brand/master/images/logo.png)
