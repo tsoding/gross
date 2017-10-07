@@ -21,20 +21,28 @@ pub enum Picture {
 
 pub type Result<T> = result::Result<T, Box<error::Error>>;
 
-fn render_picture(canvas: &mut Canvas<Window>, picture: Picture) -> Result<()> {
+fn render_picture(canvas: &mut Canvas<Window>, picture: &Picture) -> Result<()> {
     canvas.set_draw_color(Color::RGB(255, 0, 0));
-    match picture {
+    match *picture {
         Picture::Rectangle(x, y, width, height) => {
-            canvas.fill_rect(Rect::new(x, y, width, height))
+            canvas.fill_rect(Rect::new(x, y, width, height)).map_err(|e| e.into())
         },
 
         Picture::Line(x1, y1, x2, y2) => {
             canvas.draw_line(Point::new(x1, y1),
-                             Point::new(x2, y2))
+                             Point::new(x2, y2)).map_err(|e| e.into())
+        },
+
+        Picture::Pictures(ref pictures) => {
+            pictures
+                .iter()
+                .map(|picture| render_picture(canvas, picture))
+                .collect::<Result<Vec<_>>>()
+                .map(|_| ())
         },
 
         _ => Ok({})
-    }.map_err(|e| e.into())
+    }
 }
 
 pub fn simulate<S, R, U>(display: Display,
@@ -74,7 +82,7 @@ pub fn simulate<S, R, U>(display: Display,
         canvas.set_draw_color(Color::RGB(0, 0, 0));
         canvas.clear();
 
-        render_picture(&mut canvas, render(&state))?;
+        render_picture(&mut canvas, &render(&state))?;
 
         canvas.present();
 
