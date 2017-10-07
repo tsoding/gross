@@ -3,8 +3,10 @@ extern crate sdl2;
 use std::{error, result};
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
-use sdl2::rect::Rect;
+use sdl2::rect::{Rect, Point};
 use sdl2::pixels::Color;
+use sdl2::render::Canvas;
+use sdl2::video::Window;
 
 pub enum Display {
     InWindow((i32, i32), (u32, u32)),
@@ -12,10 +14,28 @@ pub enum Display {
 
 pub enum Picture {
     Blank,
-    Rectangle(i32, i32, u32, u32)
+    Rectangle(i32, i32, u32, u32),
+    Line(i32, i32, i32, i32),
+    Pictures(Vec<Picture>)
 }
 
 pub type Result<T> = result::Result<T, Box<error::Error>>;
+
+fn render_picture(canvas: &mut Canvas<Window>, picture: Picture) -> Result<()> {
+    canvas.set_draw_color(Color::RGB(255, 0, 0));
+    match picture {
+        Picture::Rectangle(x, y, width, height) => {
+            canvas.fill_rect(Rect::new(x, y, width, height))
+        },
+
+        Picture::Line(x1, y1, x2, y2) => {
+            canvas.draw_line(Point::new(x1, y1),
+                             Point::new(x2, y2))
+        },
+
+        _ => Ok({})
+    }.map_err(|e| e.into())
+}
 
 pub fn simulate<S, R, U>(display: Display,
                          init_state: S,
@@ -51,18 +71,10 @@ pub fn simulate<S, R, U>(display: Display,
             }
         }
 
-        let picture = render(&state);
-
         canvas.set_draw_color(Color::RGB(0, 0, 0));
         canvas.clear();
 
-        match picture {
-            Picture::Rectangle(x, y, width, height) => {
-                canvas.set_draw_color(Color::RGB(255, 0, 0));
-                canvas.fill_rect(Rect::new(x, y, width, height))?
-            },
-            _ => {},
-        }
+        render_picture(&mut canvas, render(&state))?;
 
         canvas.present();
 
