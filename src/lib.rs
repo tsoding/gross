@@ -4,9 +4,9 @@ use std::{error, result};
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::rect::{Rect, Point};
-use sdl2::pixels::Color;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
+use sdl2::pixels::Color;
 
 pub enum Display {
     InWindow((i32, i32), (u32, u32)),
@@ -16,13 +16,13 @@ pub enum Picture {
     Blank,
     Rectangle(i32, i32, u32, u32),
     Line(i32, i32, i32, i32),
-    Pictures(Vec<Picture>)
+    Pictures(Vec<Picture>),
+    Color(u8, u8, u8, Box<Picture>)
 }
 
 pub type Result<T> = result::Result<T, Box<error::Error>>;
 
 fn render_picture(canvas: &mut Canvas<Window>, picture: &Picture) -> Result<()> {
-    canvas.set_draw_color(Color::RGB(255, 0, 0));
     match *picture {
         Picture::Rectangle(x, y, width, height) => {
             canvas.fill_rect(Rect::new(x, y, width, height)).map_err(|e| e.into())
@@ -40,6 +40,17 @@ fn render_picture(canvas: &mut Canvas<Window>, picture: &Picture) -> Result<()> 
                 .collect::<Result<Vec<_>>>()
                 .map(|_| ())
         },
+
+        // TODO: Rethink the Color combinator implementation
+        //
+        // I think in Gloss it behaves a little bit different. We need to research that.
+        Picture::Color(r, g, b, ref boxed_picture) => {
+            let prev_color = canvas.draw_color();
+            canvas.set_draw_color(Color::RGB(r, g, b));
+            let result = render_picture(canvas, boxed_picture.as_ref());
+            canvas.set_draw_color(prev_color);
+            result
+        }
 
         _ => Ok({})
     }
@@ -82,6 +93,7 @@ pub fn simulate<S, R, U>(display: Display,
         canvas.set_draw_color(Color::RGB(0, 0, 0));
         canvas.clear();
 
+        canvas.set_draw_color(Color::RGB(255, 255, 255));
         render_picture(&mut canvas, &render(&state))?;
 
         canvas.present();
