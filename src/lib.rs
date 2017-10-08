@@ -76,7 +76,7 @@ fn render_picture(canvas: &mut Canvas<Window>, picture: &Picture) -> Result<()> 
 
         // TODO(#15): Add Picture::Polygon support
         // TODO(#16): Add Picture::Circle support
-        // TODO: Add Picture::Text support
+        // TODO(#17): Add Picture::Text support
         // TODO: Add Picture::Translate support
         // TODO: Add Picture::Rotate support
         // TODO: Add Picture::Scale support
