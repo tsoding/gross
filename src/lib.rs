@@ -41,7 +41,7 @@ fn render_picture(canvas: &mut Canvas<Window>, picture: &Picture) -> Result<()> 
                 .map(|_| ())
         },
 
-        // TODO: Rethink the Color combinator implementation
+        // TODO(#12): Rethink the Color combinator implementation
         //
         // I think in Gloss it behaves a little bit different. We need to research that.
         Picture::Color(r, g, b, ref boxed_picture) => {
