@@ -14,7 +14,7 @@ pub enum Display {
 
 pub type Point = (i32, i32);
 
-// TODO: use floats iso ints for Picture coordinates and sizes
+// TODO(#13): use floats iso ints for Picture coordinates and sizes
 #[derive(Debug)]
 pub enum Picture {
     Blank,
