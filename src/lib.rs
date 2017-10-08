@@ -23,6 +23,17 @@ pub enum Picture {
     Polygon(Vec<Point>),
     Circle(u32),
     Text(String),
+    // TODO: Design Picture::Bitmap interface and implement support for it
+    //
+    // It would be good to have support for some bitmaps, but at the
+    // moment I don't know how the signature of Picture::Bitmap should
+    // look like.
+    //
+    // Gloss implements some kind of [BitmapData][BitmapData]. Maybe
+    // we should implement something similar
+    //
+    // [BitmapData]: https://hackage.haskell.org/package/gloss-1.11.1.1/docs/Graphics-Gloss-Data-Bitmap.html#t:BitmapData
+    Bitmap,
 
     Pictures(Vec<Picture>),
     Color(u8, u8, u8, Box<Picture>)
