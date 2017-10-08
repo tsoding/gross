@@ -38,6 +38,8 @@ pub enum Picture {
     Pictures(Vec<Picture>),
     Color(u8, u8, u8, Box<Picture>),
     Translate(i32, i32, Box<Picture>),
+    Rotate(i32, Box<Picture>),
+    Scale(i32, i32, Box<Picture>),
 }
 
 pub type Result<T> = result::Result<T, Box<error::Error>>;
@@ -76,6 +78,8 @@ fn render_picture(canvas: &mut Canvas<Window>, picture: &Picture) -> Result<()> 
         // TODO: Add Picture::Circle support
         // TODO: Add Picture::Text support
         // TODO: Add Picture::Translate support
+        // TODO: Add Picture::Rotate support
+        // TODO: Add Picture::Scale support
 
         Picture::Blank => Ok({}),
 
