@@ -14,11 +14,13 @@ pub enum Display {
 
 pub type Point = (i32, i32);
 
+// TODO: use floats iso ints for Picture coordinates and sizes
 pub enum Picture {
     Blank,
     Rectangle(i32, i32, u32, u32),
     Line(i32, i32, i32, i32),
     Polygon(Vec<Point>),
+    Circle(u32),
 
     Pictures(Vec<Picture>),
     Color(u8, u8, u8, Box<Picture>)
@@ -57,6 +59,7 @@ fn render_picture(canvas: &mut Canvas<Window>, picture: &Picture) -> Result<()> 
         }
 
         // TODO: Add Picture::Polygon support
+        // TODO: Add Picture::Circle support
 
         _ => Ok({})
     }
