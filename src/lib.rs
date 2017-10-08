@@ -79,7 +79,7 @@ fn render_picture(canvas: &mut Canvas<Window>, picture: &Picture) -> Result<()> 
         // TODO(#17): Add Picture::Text support
         // TODO(#18): Add Picture::Translate support
         // TODO(#19): Add Picture::Rotate support
-        // TODO: Add Picture::Scale support
+        // TODO(#20): Add Picture::Scale support
 
         Picture::Blank => Ok({}),
 
