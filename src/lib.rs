@@ -15,6 +15,7 @@ pub enum Display {
 pub type Point = (i32, i32);
 
 // TODO: use floats iso ints for Picture coordinates and sizes
+#[derive(Debug)]
 pub enum Picture {
     Blank,
     Rectangle(i32, i32, u32, u32),
@@ -63,7 +64,9 @@ fn render_picture(canvas: &mut Canvas<Window>, picture: &Picture) -> Result<()> 
         // TODO: Add Picture::Circle support
         // TODO: Add Picture::Text support
 
-        _ => Ok({})
+        Picture::Blank => Ok({}),
+
+        _ => panic!("Unsupported Picture element {:?}", picture)
     }
 }
 
