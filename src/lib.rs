@@ -36,7 +36,8 @@ pub enum Picture {
     Bitmap,
 
     Pictures(Vec<Picture>),
-    Color(u8, u8, u8, Box<Picture>)
+    Color(u8, u8, u8, Box<Picture>),
+    Translate(i32, i32, Box<Picture>),
 }
 
 pub type Result<T> = result::Result<T, Box<error::Error>>;
@@ -74,6 +75,7 @@ fn render_picture(canvas: &mut Canvas<Window>, picture: &Picture) -> Result<()> 
         // TODO: Add Picture::Polygon support
         // TODO: Add Picture::Circle support
         // TODO: Add Picture::Text support
+        // TODO: Add Picture::Translate support
 
         Picture::Blank => Ok({}),
 
