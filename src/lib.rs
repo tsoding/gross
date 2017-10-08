@@ -23,7 +23,7 @@ pub enum Picture {
     Polygon(Vec<Point>),
     Circle(u32),
     Text(String),
-    // TODO: Design Picture::Bitmap interface and implement support for it
+    // TODO(#14): Design Picture::Bitmap interface and implement support for it
     //
     // It would be good to have support for some bitmaps, but at the
     // moment I don't know how the signature of Picture::Bitmap should
