@@ -3,7 +3,7 @@ extern crate sdl2;
 use std::{error, result};
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
-use sdl2::rect::{Rect, Point};
+use sdl2::rect;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 use sdl2::pixels::Color;
@@ -12,10 +12,14 @@ pub enum Display {
     InWindow((i32, i32), (u32, u32)),
 }
 
+pub type Point = (i32, i32);
+
 pub enum Picture {
     Blank,
     Rectangle(i32, i32, u32, u32),
     Line(i32, i32, i32, i32),
+    Polygon(Vec<Point>),
+
     Pictures(Vec<Picture>),
     Color(u8, u8, u8, Box<Picture>)
 }
@@ -25,12 +29,12 @@ pub type Result<T> = result::Result<T, Box<error::Error>>;
 fn render_picture(canvas: &mut Canvas<Window>, picture: &Picture) -> Result<()> {
     match *picture {
         Picture::Rectangle(x, y, width, height) => {
-            canvas.fill_rect(Rect::new(x, y, width, height)).map_err(|e| e.into())
+            canvas.fill_rect(rect::Rect::new(x, y, width, height)).map_err(|e| e.into())
         },
 
         Picture::Line(x1, y1, x2, y2) => {
-            canvas.draw_line(Point::new(x1, y1),
-                             Point::new(x2, y2)).map_err(|e| e.into())
+            canvas.draw_line(rect::Point::new(x1, y1),
+                             rect::Point::new(x2, y2)).map_err(|e| e.into())
         },
 
         Picture::Pictures(ref pictures) => {
@@ -51,6 +55,8 @@ fn render_picture(canvas: &mut Canvas<Window>, picture: &Picture) -> Result<()> 
             canvas.set_draw_color(prev_color);
             result
         }
+
+        // TODO: Add Picture::Polygon support
 
         _ => Ok({})
     }
