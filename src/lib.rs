@@ -12,16 +12,15 @@ pub enum Display {
     InWindow((i32, i32), (u32, u32)),
 }
 
-pub type Point = (i32, i32);
+pub type Point = (f32, f32);
 
-// TODO(#13): use floats iso ints for Picture coordinates and sizes
 #[derive(Debug)]
 pub enum Picture {
     Blank,
-    Rectangle(i32, i32, u32, u32),
-    Line(i32, i32, i32, i32),
+    Rectangle(f32, f32, f32, f32),
+    Line(f32, f32, f32, f32),
     Polygon(Vec<Point>),
-    Circle(u32),
+    Circle(f32),
     Text(String),
     // TODO(#14): Design Picture::Bitmap interface and implement support for it
     //
@@ -36,10 +35,10 @@ pub enum Picture {
     Bitmap,
 
     Pictures(Vec<Picture>),
-    Color(u8, u8, u8, Box<Picture>),
-    Translate(i32, i32, Box<Picture>),
-    Rotate(i32, Box<Picture>),
-    Scale(i32, i32, Box<Picture>),
+    Color(f32, f32, f32, Box<Picture>),
+    Translate(f32, f32, Box<Picture>),
+    Rotate(f32, Box<Picture>),
+    Scale(f32, f32, Box<Picture>),
 }
 
 pub type Result<T> = result::Result<T, Box<error::Error>>;
@@ -47,12 +46,15 @@ pub type Result<T> = result::Result<T, Box<error::Error>>;
 fn render_picture(canvas: &mut Canvas<Window>, picture: &Picture) -> Result<()> {
     match *picture {
         Picture::Rectangle(x, y, width, height) => {
-            canvas.fill_rect(rect::Rect::new(x, y, width, height)).map_err(|e| e.into())
+            canvas.fill_rect(rect::Rect::new(x as i32,
+                                             y as i32,
+                                             width as u32,
+                                             height as u32)).map_err(|e| e.into())
         },
 
         Picture::Line(x1, y1, x2, y2) => {
-            canvas.draw_line(rect::Point::new(x1, y1),
-                             rect::Point::new(x2, y2)).map_err(|e| e.into())
+            canvas.draw_line(rect::Point::new(x1 as i32, y1 as i32),
+                             rect::Point::new(x2 as i32, y2 as i32)).map_err(|e| e.into())
         },
 
         Picture::Pictures(ref pictures) => {
@@ -68,7 +70,9 @@ fn render_picture(canvas: &mut Canvas<Window>, picture: &Picture) -> Result<()> 
         // I think in Gloss it behaves a little bit different. We need to research that.
         Picture::Color(r, g, b, ref boxed_picture) => {
             let prev_color = canvas.draw_color();
-            canvas.set_draw_color(Color::RGB(r, g, b));
+            canvas.set_draw_color(Color::RGB((r * 255.0) as u8,
+                                             (g * 255.0) as u8,
+                                             (b * 255.0) as u8));
             let result = render_picture(canvas, boxed_picture.as_ref());
             canvas.set_draw_color(prev_color);
             result
