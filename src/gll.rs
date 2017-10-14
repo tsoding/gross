@@ -8,10 +8,32 @@ pub struct Program {
 
 impl Program {
     pub fn from_shaders(shaders: Vec<Shader>) -> Result<Program> {
-        Ok(Program { id: 0 })
+        unsafe {
+            let id = gl::CreateProgram();
+
+            for shader in shaders.iter() {
+                gl::AttachShader(id, shader.id);
+            }
+
+            gl::LinkProgram(id);
+
+            let mut params: i32 = -1;
+
+            gl::GetProgramiv(id, gl::LINK_STATUS,
+                             &mut params as *mut i32);
+
+            if gl::TRUE as i32 != params {
+                Err("Could not link shader program".into())
+            } else {
+                Ok(Program { id: id })
+            }
+        }
     }
 
     pub fn use_program(&self) {
+        unsafe {
+            gl::UseProgram(self.id);
+        }
     }
 }
 
@@ -24,9 +46,8 @@ impl Shader {
         let c_source_code = std::ffi::CString::new(source_code)?;
         let p = c_source_code.as_ptr() as *const i8;
 
-        let mut id = 0;
         unsafe {
-            id = gl::CreateShader(shader_type);
+            let id = gl::CreateShader(shader_type);
             gl::ShaderSource(id, 1, &p, std::ptr::null());
             gl::CompileShader(id);
 
@@ -50,37 +71,5 @@ impl Shader {
                 Ok(Shader { id: id })
             }
         }
-    }
-}
-
-pub struct VertexBuffer {
-    pub id: u32,
-    pub components_size: u32
-}
-
-impl VertexBuffer {
-    pub fn new(components_size: u32) -> Result<VertexBuffer> {
-        unimplemented!()
-    }
-
-    pub fn buffer_data(&self, data: Vec<f32>) {
-
-    }
-}
-
-pub struct VertexArray {
-    pub id: u32
-}
-
-impl VertexArray {
-    pub fn new() -> Result<VertexArray> {
-        unimplemented!()
-    }
-
-    pub fn vertex_attrib_array(&self, buffer: &VertexBuffer) {
-        unimplemented!()
-    }
-
-    pub fn bind(&self) {
     }
 }
