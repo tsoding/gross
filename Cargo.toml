@@ -5,6 +5,7 @@ authors = ["rexim <reximkut@gmail.com>"]
 
 [dependencies]
 sdl2 = "0.30"
+gl = "0.6.0"
 
 [[example]]
 name = "hello_world"
