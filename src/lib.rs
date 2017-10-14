@@ -125,7 +125,7 @@ pub fn simulate<S, R, U>(display: Display,
             .build()?
     };
 
-    let context = window.gl_create_context().unwrap();
+    let _context = window.gl_create_context().unwrap();
     gl::load_with(|name| video_subsystem.gl_get_proc_address(name) as *const _);
     let mut event_pump = sdl2_context.event_pump()?;
 
