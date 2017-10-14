@@ -1,4 +1,5 @@
 extern crate sdl2;
+extern crate gl;
 
 use std::{error, result};
 use sdl2::event::Event;
@@ -110,7 +111,8 @@ pub fn simulate<S, R, U>(display: Display,
             .build()?
     };
 
-    let mut canvas = window.into_canvas().build()?;
+    let context = window.gl_create_context().unwrap();
+    gl::load_with(|name| video_subsystem.gl_get_proc_address(name) as *const _);
     let mut event_pump = sdl2_context.event_pump()?;
 
     let mut state = init_state;
@@ -125,13 +127,14 @@ pub fn simulate<S, R, U>(display: Display,
             }
         }
 
-        canvas.set_draw_color(Color::RGB(0, 0, 0));
-        canvas.clear();
+        unsafe {
+            let (width, height) = window.size();
+            gl::ClearColor(1.0, 0.0, 0.0, 0.0);
+            gl::Clear(gl::COLOR_BUFFER_BIT);
+            gl::Viewport(0, 0, width as i32, height as i32);
+        }
 
-        canvas.set_draw_color(Color::RGB(255, 255, 255));
-        render_picture(&mut canvas, &render(&state))?;
-
-        canvas.present();
+        window.gl_swap_window();
 
         state = update(state);
     }

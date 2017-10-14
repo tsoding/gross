@@ -12,8 +12,10 @@ in rec {
                     pkgs.SDL2
                     pkgs.SDL2_ttf
                     pkgs.kcov
+                    pkgs.mesa
                     dimooperChannel.rust
                     dimooperChannel.rust-src ];
     RUST_SRC_PATH = "${dimooperChannel.rust-src}/lib/rustlib/src/rust/src";
+    LD_LIBRARY_PATH="${pkgs.mesa}/lib";
   };
 }
