@@ -1,13 +1,18 @@
 extern crate sdl2;
 extern crate gl;
 
-use std::{error, result};
+mod gll;
+mod result;
+
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::rect;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 use sdl2::pixels::Color;
+
+use result::Result;
+use gll::*;
 
 pub enum Display {
     InWindow((i32, i32), (u32, u32)),
@@ -42,26 +47,32 @@ pub enum Picture {
     Scale(f32, f32, Box<Picture>),
 }
 
-pub type Result<T> = result::Result<T, Box<error::Error>>;
-
-fn render_picture(canvas: &mut Canvas<Window>, picture: &Picture) -> Result<()> {
+fn render_picture(picture: &Picture,
+                  vertex_buffer: &VertexBuffer,
+                  vertex_array: &VertexArray) -> Result<()> {
     match *picture {
         Picture::Rectangle(x, y, width, height) => {
-            canvas.fill_rect(rect::Rect::new(x as i32,
-                                             y as i32,
-                                             width as u32,
-                                             height as u32)).map_err(|e| e.into())
+            vertex_buffer.buffer_data(vec![x,         y,          0.0f32,
+                                           x + width, y,          0.0f32,
+                                           x + width, y + height, 0.0f32,
+                                           x,         y + height, 0.0f32]);
+            vertex_array.bind();
+            unsafe { gl::DrawArrays(gl::TRIANGLE_FAN, 0, 4) };
+            Ok({})
         },
 
         Picture::Line(x1, y1, x2, y2) => {
-            canvas.draw_line(rect::Point::new(x1 as i32, y1 as i32),
-                             rect::Point::new(x2 as i32, y2 as i32)).map_err(|e| e.into())
+            vertex_buffer.buffer_data(vec![x1, y1, 0.0f32,
+                                           x2, y2, 0.0f32]);
+            vertex_array.bind();
+            unsafe { gl::DrawArrays(gl::LINES, 0, 2) };
+            Ok({})
         },
 
         Picture::Pictures(ref pictures) => {
             pictures
                 .iter()
-                .map(|picture| render_picture(canvas, picture))
+                .map(|picture| render_picture(picture, vertex_buffer, vertex_array))
                 .collect::<Result<Vec<_>>>()
                 .map(|_| ())
         },
@@ -70,13 +81,7 @@ fn render_picture(canvas: &mut Canvas<Window>, picture: &Picture) -> Result<()> 
         //
         // I think in Gloss it behaves a little bit different. We need to research that.
         Picture::Color(r, g, b, ref boxed_picture) => {
-            let prev_color = canvas.draw_color();
-            canvas.set_draw_color(Color::RGB((r * 255.0) as u8,
-                                             (g * 255.0) as u8,
-                                             (b * 255.0) as u8));
-            let result = render_picture(canvas, boxed_picture.as_ref());
-            canvas.set_draw_color(prev_color);
-            result
+            Ok({})
         }
 
         // TODO(#15): Add Picture::Polygon support
@@ -117,6 +122,15 @@ pub fn simulate<S, R, U>(display: Display,
 
     let mut state = init_state;
 
+    let vertex_shader = Shader::from_str(gl::VERTEX_SHADER, include_str!("shaders/vertex.glsl"))?;
+    let frag_shader = Shader::from_str(gl::FRAGMENT_SHADER, include_str!("shaders/frag.glsl"))?;
+    let program = Program::from_shaders(vec![vertex_shader, frag_shader])?;
+
+    let vertex_buffer = VertexBuffer::new(3)?;
+    let vertex_array = VertexArray::new()?;
+
+    vertex_array.vertex_attrib_array(&vertex_buffer);
+
     'running: loop {
         for event in event_pump.poll_iter() {
             match event {
@@ -132,7 +146,10 @@ pub fn simulate<S, R, U>(display: Display,
             gl::ClearColor(1.0, 0.0, 0.0, 0.0);
             gl::Clear(gl::COLOR_BUFFER_BIT);
             gl::Viewport(0, 0, width as i32, height as i32);
+            program.use_program();
         }
+
+        render_picture(&render(&state), &vertex_buffer, &vertex_array)?;
 
         window.gl_swap_window();
 
