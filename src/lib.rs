@@ -42,7 +42,13 @@ pub enum Picture {
     Scale(f32, f32, Box<Picture>),
 }
 
-fn render_picture(picture: &Picture, points_vbo: u32, color_loc: i32) -> Result<()> {
+fn render_picture(picture: &Picture,
+                  points_vbo: u32,
+                  color_loc: i32,
+                  radius_loc: i32,
+                  program: &Program,
+                  circle_program: &Program) -> Result<()> {
+    program.use_program();
     match *picture {
         Picture::Polygon(ref points) => {
             let data: Vec<f32> = points
@@ -79,7 +85,12 @@ fn render_picture(picture: &Picture, points_vbo: u32, color_loc: i32) -> Result<
         Picture::Pictures(ref pictures) => {
             pictures
                 .iter()
-                .map(|picture| render_picture(picture, points_vbo, color_loc))
+                .map(|picture| render_picture(picture,
+                                              points_vbo,
+                                              color_loc,
+                                              radius_loc,
+                                              program,
+                                              circle_program))
                 .collect::<Result<Vec<_>>>()
                 .map(|_| ())
         },
@@ -89,12 +100,37 @@ fn render_picture(picture: &Picture, points_vbo: u32, color_loc: i32) -> Result<
         // I think in Gloss it behaves a little bit different. We need to research that.
         Picture::Color(r, g, b, ref boxed_picture) => {
             unsafe {
-                gl::Uniform3fv(color_loc, 1, vec![r, g, b].as_ptr())
+                program.use_program();
+                gl::Uniform3fv(color_loc, 1, vec![r, g, b].as_ptr());
             }
-            render_picture(boxed_picture.as_ref(), points_vbo, color_loc)
-        }
+            render_picture(boxed_picture.as_ref(),
+                           points_vbo,
+                           color_loc,
+                           radius_loc,
+                           program,
+                           circle_program)
+        },
 
-        // TODO(#16): Add Picture::Circle support
+        // TODO: Add Picture::Color support for Picture::Circle
+        Picture::Circle(radius) => {
+            let points = vec![-1.0f32, -1.0f32, 0.0f32,
+                              1.0f32, -1.0f32, 0.0f32,
+                              1.0f32, 1.0f32, 0.0f32,
+                              -1.0f32, 1.0f32, 0.0f32];
+
+            circle_program.use_program();
+            unsafe {
+                gl::BindBuffer(gl::ARRAY_BUFFER, points_vbo);
+                gl::BufferData(gl::ARRAY_BUFFER,
+                               (std::mem::size_of::<f32>() * points.len()) as isize,
+                               points.as_ptr() as *const _,
+                               gl::STATIC_DRAW);
+                gl::Uniform1f(radius_loc, radius);
+                gl::DrawArrays(gl::TRIANGLE_FAN, 0, points.len() as i32);
+            }
+            Ok({})
+        },
+
         // TODO(#17): Add Picture::Text support
         // TODO(#18): Add Picture::Translate support
         // TODO(#19): Add Picture::Rotate support
@@ -194,27 +230,12 @@ pub fn simulate<S, R, U>(display: Display,
             gl::BindVertexArray(vao);
         }
 
-        render_picture(&render(&state), points_vbo, color_loc)?;
-
-        {
-            let points = vec![-1.0f32, -1.0f32, 0.0f32,
-                              1.0f32, -1.0f32, 0.0f32,
-                              1.0f32, 1.0f32, 0.0f32,
-                              -1.0f32, 1.0f32, 0.0f32];
-
-            circle_program.use_program();
-            unsafe {
-                gl::BindVertexArray(vao);
-                gl::BindBuffer(gl::ARRAY_BUFFER, points_vbo);
-                gl::BufferData(gl::ARRAY_BUFFER,
-                               (std::mem::size_of::<f32>() * points.len()) as isize,
-                               points.as_ptr() as *const _,
-                               gl::STATIC_DRAW);
-                gl::Uniform1f(radius_loc, 100.0f32);
-                gl::DrawArrays(gl::TRIANGLE_FAN, 0, points.len() as i32);
-            }
-        }
-
+        render_picture(&render(&state),
+                       points_vbo,
+                       color_loc,
+                       radius_loc,
+                       &program,
+                       &circle_program)?;
 
         window.gl_swap_window();
 
