@@ -149,6 +149,12 @@ pub fn simulate<S, R, U>(display: Display,
             std::ffi::CString::new("color").unwrap().as_ptr())
     };
 
+    let radius_loc = unsafe {
+        gl::GetUniformLocation(
+            circle_program.id,
+            std::ffi::CString::new("radius").unwrap().as_ptr())
+    };
+
     let mut points_vbo = 0;
     unsafe {
         gl::GenBuffers(1, &mut points_vbo);
@@ -195,6 +201,7 @@ pub fn simulate<S, R, U>(display: Display,
                               1.0f32, -1.0f32, 0.0f32,
                               1.0f32, 1.0f32, 0.0f32,
                               -1.0f32, 1.0f32, 0.0f32];
+
             circle_program.use_program();
             unsafe {
                 gl::BindVertexArray(vao);
@@ -203,6 +210,7 @@ pub fn simulate<S, R, U>(display: Display,
                                (std::mem::size_of::<f32>() * points.len()) as isize,
                                points.as_ptr() as *const _,
                                gl::STATIC_DRAW);
+                gl::Uniform1f(radius_loc, 100.0f32);
                 gl::DrawArrays(gl::TRIANGLE_FAN, 0, points.len() as i32);
             }
         }

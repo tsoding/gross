@@ -1,6 +1,7 @@
 #version 320 es
 
 out highp vec4 frag_color;
+uniform highp float radius;
 
 /**
  * @author jonobr1 / http://jonobr1.com/
@@ -27,7 +28,6 @@ void main() {
 
     highp vec2 uv = gl_FragCoord.xy;
     highp vec2 center = vec2(400.0, 300.0);
-    highp float radius = 0.25 * 600.0;
 
     // Background layer
     // highp vec4 layer1 = vec4(rgb(210.0, 222.0, 228.0), 1.0);
