@@ -19,7 +19,6 @@ pub type Point = (f32, f32);
 #[derive(Debug)]
 pub enum Picture {
     Blank,
-    Rectangle(f32, f32, f32, f32),
     Line(f32, f32, f32, f32),
     Polygon(Vec<Point>),
     Circle(f32),
@@ -45,19 +44,21 @@ pub enum Picture {
 
 fn render_picture(picture: &Picture, points_vbo: u32, color_loc: i32) -> Result<()> {
     match *picture {
-        Picture::Rectangle(x, y, width, height) => {
-            let points = vec![x,         y,          0.0f32,
-                              x + width, y,          0.0f32,
-                              x + width, y + height, 0.0f32,
-                              x,         y + height, 0.0f32];
+        Picture::Polygon(ref points) => {
+            let data: Vec<f32> = points
+                .iter()
+                .flat_map(|&(x, y)| vec![x, y, 0.0f32])
+                .collect();
+
             unsafe {
                 gl::BindBuffer(gl::ARRAY_BUFFER, points_vbo);
                 gl::BufferData(gl::ARRAY_BUFFER,
-                               (std::mem::size_of::<f32>() * points.len()) as isize,
-                               points.as_ptr() as *const _,
+                               (std::mem::size_of::<f32>() * data.len()) as isize,
+                               data.as_ptr() as *const _,
                                gl::STATIC_DRAW);
                 gl::DrawArrays(gl::TRIANGLE_FAN, 0, 4);
             }
+
             Ok({})
         },
 
@@ -93,7 +94,6 @@ fn render_picture(picture: &Picture, points_vbo: u32, color_loc: i32) -> Result<
             render_picture(boxed_picture.as_ref(), points_vbo, color_loc)
         }
 
-        // TODO(#15): Add Picture::Polygon support
         // TODO(#16): Add Picture::Circle support
         // TODO(#17): Add Picture::Text support
         // TODO(#18): Add Picture::Translate support
