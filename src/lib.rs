@@ -131,9 +131,17 @@ pub fn simulate<S, R, U>(display: Display,
 
     let mut state = init_state;
 
+    unsafe {
+        gl::Enable(gl::BLEND);
+        gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
+    }
+
     let vertex_shader = Shader::from_str(gl::VERTEX_SHADER, include_str!("shaders/vertex.glsl"))?;
     let frag_shader = Shader::from_str(gl::FRAGMENT_SHADER, include_str!("shaders/frag.glsl"))?;
-    let program = Program::from_shaders(vec![vertex_shader, frag_shader])?;
+    let circle_shader = Shader::from_str(gl::FRAGMENT_SHADER, include_str!("shaders/circle.glsl"))?;
+
+    let program = Program::from_shaders(vec![&vertex_shader, &frag_shader])?;
+    let circle_program = Program::from_shaders(vec![&vertex_shader, &circle_shader])?;
 
     let color_loc = unsafe {
         gl::GetUniformLocation(
@@ -181,6 +189,24 @@ pub fn simulate<S, R, U>(display: Display,
         }
 
         render_picture(&render(&state), points_vbo, color_loc)?;
+
+        {
+            let points = vec![-1.0f32, -1.0f32, 0.0f32,
+                              1.0f32, -1.0f32, 0.0f32,
+                              1.0f32, 1.0f32, 0.0f32,
+                              -1.0f32, 1.0f32, 0.0f32];
+            circle_program.use_program();
+            unsafe {
+                gl::BindVertexArray(vao);
+                gl::BindBuffer(gl::ARRAY_BUFFER, points_vbo);
+                gl::BufferData(gl::ARRAY_BUFFER,
+                               (std::mem::size_of::<f32>() * points.len()) as isize,
+                               points.as_ptr() as *const _,
+                               gl::STATIC_DRAW);
+                gl::DrawArrays(gl::TRIANGLE_FAN, 0, points.len() as i32);
+            }
+        }
+
 
         window.gl_swap_window();
 
