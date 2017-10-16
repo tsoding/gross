@@ -111,7 +111,7 @@ fn render_picture(picture: &Picture,
                            circle_program)
         },
 
-        // TODO: Add Picture::Color support for Picture::Circle
+        // TODO(#28): Add Picture::Color support for Picture::CircleR
         Picture::Circle(radius) => {
             let points = vec![-1.0f32, -1.0f32, 0.0f32,
                               1.0f32, -1.0f32, 0.0f32,
