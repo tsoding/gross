@@ -7,7 +7,7 @@ pub struct Program {
 }
 
 impl Program {
-    pub fn from_shaders(shaders: Vec<Shader>) -> Result<Program> {
+    pub fn from_shaders(shaders: Vec<&Shader>) -> Result<Program> {
         unsafe {
             let id = gl::CreateProgram();
 
@@ -23,7 +23,17 @@ impl Program {
                              &mut params as *mut i32);
 
             if gl::TRUE as i32 != params {
-                Err("Could not link shader program".into())
+                let mut max_length: i32 = 0;
+                gl::GetProgramiv(id,
+                                 gl::INFO_LOG_LENGTH,
+                                 &mut max_length as *mut i32);
+
+                let mut error_log: Vec<u8> = vec![0; max_length as usize];
+
+                gl::GetProgramInfoLog(id, max_length,
+                                      &mut max_length as *mut i32,
+                                      error_log.as_mut_ptr() as *mut i8);
+                Err(std::str::from_utf8(&error_log)?.into())
             } else {
                 Ok(Program { id: id })
             }
