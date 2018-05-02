@@ -101,8 +101,8 @@ fn render_picture(picture: &Picture,
         //
         // I think in Gloss it behaves a little bit different. We need to research that.
         Picture::Color(r, g, b, ref boxed_picture) => {
-            color_loc.assign_vec([r, g, b]);
-            circle_color_loc.assign_vec([r, g, b]);
+            color_loc.assign_3fv([r, g, b]);
+            circle_color_loc.assign_3fv([r, g, b]);
             render_picture(boxed_picture.as_ref(),
                            points_vbo,
                            color_loc,

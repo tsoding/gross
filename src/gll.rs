@@ -21,7 +21,7 @@ impl<'a> UniformLoc<'a> {
         }
     }
 
-    pub fn assign_vec(&self, v: [f32; 3]) {
+    pub fn assign_3fv(&self, v: [f32; 3]) {
         unsafe {
             self.program.use_program();
             gl::Uniform3fv(self.loc_id, 1, v.as_ptr());
