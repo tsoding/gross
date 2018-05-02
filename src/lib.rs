@@ -44,9 +44,9 @@ pub enum Picture {
 
 fn render_picture(picture: &Picture,
                   points_vbo: u32,
-                  color_loc: i32,
-                  circle_color_loc: i32,
-                  radius_loc: i32,
+                  color_loc: &UniformLoc,
+                  circle_color_loc: &UniformLoc,
+                  radius_loc: &UniformLoc,
                   program: &Program,
                   circle_program: &Program) -> Result<()> {
     program.use_program();
@@ -101,12 +101,8 @@ fn render_picture(picture: &Picture,
         //
         // I think in Gloss it behaves a little bit different. We need to research that.
         Picture::Color(r, g, b, ref boxed_picture) => {
-            unsafe {
-                program.use_program();
-                gl::Uniform3fv(color_loc, 1, vec![r, g, b].as_ptr());
-                circle_program.use_program();
-                gl::Uniform3fv(circle_color_loc, 1, vec![r, g, b].as_ptr());
-            }
+            color_loc.assign_vec([r, g, b]);
+            circle_color_loc.assign_vec([r, g, b]);
             render_picture(boxed_picture.as_ref(),
                            points_vbo,
                            color_loc,
@@ -130,7 +126,7 @@ fn render_picture(picture: &Picture,
                                (std::mem::size_of::<f32>() * points.len()) as isize,
                                points.as_ptr() as *const _,
                                gl::STATIC_DRAW);
-                gl::Uniform1f(radius_loc, radius);
+                radius_loc.assign_f32(radius);
                 gl::DrawArrays(gl::TRIANGLE_FAN, 0, points.len() as i32);
             }
             Ok({})
@@ -184,23 +180,9 @@ pub fn simulate<S, R, U>(display: Display,
     let program = Program::from_shaders(vec![&vertex_shader, &frag_shader])?;
     let circle_program = Program::from_shaders(vec![&vertex_shader, &circle_shader])?;
 
-    let color_loc = unsafe {
-        gl::GetUniformLocation(
-            program.id,
-            std::ffi::CString::new("color").unwrap().as_ptr())
-    };
-
-    let circle_color_loc = unsafe {
-        gl::GetUniformLocation(
-            circle_program.id,
-            std::ffi::CString::new("color").unwrap().as_ptr())
-    };
-
-    let radius_loc = unsafe {
-        gl::GetUniformLocation(
-            circle_program.id,
-            std::ffi::CString::new("radius").unwrap().as_ptr())
-    };
+    let color_loc = UniformLoc::from_program(&program, "color");
+    let circle_color_loc = UniformLoc::from_program(&circle_program, "color");
+    let radius_loc = UniformLoc::from_program(&circle_program, "radius");
 
     let mut points_vbo = 0;
     unsafe {
@@ -243,9 +225,9 @@ pub fn simulate<S, R, U>(display: Display,
 
         render_picture(&render(&state),
                        points_vbo,
-                       color_loc,
-                       circle_color_loc,
-                       radius_loc,
+                       &color_loc,
+                       &circle_color_loc,
+                       &radius_loc,
                        &program,
                        &circle_program)?;
 

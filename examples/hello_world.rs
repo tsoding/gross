@@ -21,7 +21,7 @@ fn main() {
                                                 Box::new(Line(s.x, s.y, 1.0f32, 1.0f32))),
                                           // TODO(#27): Use GL coordinates iso screen coordinatse
                                           Color(0.5f32, 0.5f32, 0.0f32,
-                                                Box::new(Circle(25.0)))]),
+                                                Box::new(Circle(50.0)))]),
                     |mut s| {
                         s.x = (s.x + 0.01f32) % 1.0f32;
                         s

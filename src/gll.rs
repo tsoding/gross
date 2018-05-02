@@ -4,6 +4,38 @@ use result::Result;
 
 // TODO(#31): create an entity for the uniformed location
 
+pub struct UniformLoc<'a> {
+    program: &'a Program,
+    loc_id: i32
+}
+
+impl<'a> UniformLoc<'a> {
+    pub fn from_program(program: &'a Program, name: &str) -> UniformLoc<'a> {
+        UniformLoc {
+            program: program,
+            loc_id: unsafe {
+                gl::GetUniformLocation(
+                    program.id,
+                    std::ffi::CString::new(name).unwrap().as_ptr())
+            }
+        }
+    }
+
+    pub fn assign_vec(&self, v: [f32; 3]) {
+        unsafe {
+            self.program.use_program();
+            gl::Uniform3fv(self.loc_id, 1, v.as_ptr());
+        }
+    }
+
+    pub fn assign_f32(&self, f: f32) {
+        unsafe {
+            self.program.use_program();
+            gl::Uniform1f(self.loc_id, f);
+        }
+    }
+}
+
 pub struct Program {
     pub id: u32
 }
