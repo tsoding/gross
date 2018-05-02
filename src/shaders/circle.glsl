@@ -2,6 +2,7 @@
 
 out highp vec4 frag_color;
 uniform highp float radius;
+uniform highp vec3 color;
 
 /**
  * @author jonobr1 / http://jonobr1.com/
@@ -34,7 +35,7 @@ void main() {
     highp vec4 layer1 = vec4(0.0, 0.0, 0.0, 0.0);
 
     // Circle
-    highp vec3 red = rgb(225.0, 95.0, 60.0);
+    highp vec3 red = color;
     highp vec4 layer2 = circle(uv, center, radius, red);
 
     // Blend the two

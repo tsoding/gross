@@ -10,7 +10,6 @@ struct State {
 fn main() {
     use Picture::*;
 
-
     gross::simulate(gross::Display::InWindow((10, 10), (800, 600)),
                     State { x: 0.0f32, y: 0.0f32 },
                     |ref s| Pictures(vec![Color(1.0f32, 0.0f32, 0.0f32,
@@ -21,7 +20,8 @@ fn main() {
                                           Color(0.0f32, 1.0f32, 0.0f32,
                                                 Box::new(Line(s.x, s.y, 1.0f32, 1.0f32))),
                                           // TODO(#27): Use GL coordinates iso screen coordinatse
-                                          Circle(25.0)]),
+                                          Color(0.5f32, 0.5f32, 0.0f32,
+                                                Box::new(Circle(25.0)))]),
                     |mut s| {
                         s.x = (s.x + 0.01f32) % 1.0f32;
                         s

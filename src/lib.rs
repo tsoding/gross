@@ -45,6 +45,7 @@ pub enum Picture {
 fn render_picture(picture: &Picture,
                   points_vbo: u32,
                   color_loc: i32,
+                  circle_color_loc: i32,
                   radius_loc: i32,
                   program: &Program,
                   circle_program: &Program) -> Result<()> {
@@ -88,6 +89,7 @@ fn render_picture(picture: &Picture,
                 .map(|picture| render_picture(picture,
                                               points_vbo,
                                               color_loc,
+                                              circle_color_loc,
                                               radius_loc,
                                               program,
                                               circle_program))
@@ -102,10 +104,13 @@ fn render_picture(picture: &Picture,
             unsafe {
                 program.use_program();
                 gl::Uniform3fv(color_loc, 1, vec![r, g, b].as_ptr());
+                circle_program.use_program();
+                gl::Uniform3fv(circle_color_loc, 1, vec![r, g, b].as_ptr());
             }
             render_picture(boxed_picture.as_ref(),
                            points_vbo,
                            color_loc,
+                           circle_color_loc,
                            radius_loc,
                            program,
                            circle_program)
@@ -185,6 +190,12 @@ pub fn simulate<S, R, U>(display: Display,
             std::ffi::CString::new("color").unwrap().as_ptr())
     };
 
+    let circle_color_loc = unsafe {
+        gl::GetUniformLocation(
+            circle_program.id,
+            std::ffi::CString::new("color").unwrap().as_ptr())
+    };
+
     let radius_loc = unsafe {
         gl::GetUniformLocation(
             circle_program.id,
@@ -233,6 +244,7 @@ pub fn simulate<S, R, U>(display: Display,
         render_picture(&render(&state),
                        points_vbo,
                        color_loc,
+                       circle_color_loc,
                        radius_loc,
                        &program,
                        &circle_program)?;

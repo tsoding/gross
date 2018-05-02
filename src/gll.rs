@@ -2,6 +2,8 @@ use gl;
 use std;
 use result::Result;
 
+// TODO: create an entity for the uniformed location
+
 pub struct Program {
     pub id: u32
 }
